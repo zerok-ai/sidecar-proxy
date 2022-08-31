@@ -16,5 +16,5 @@ fi
 sh ./$clusterProvider/install.sh
 
 # install loadtest
-kubectl apply -f httpbin.yaml
+# kubectl apply -f httpbin.yaml
 

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: target
+  namespace: default
+spec:
+  ports:
+  - port: 15003
+    protocol: TCP
+  selector:
+    app: target
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}

@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: target
+  namespace: default
+  labels:
+    app: target
+spec:
+  initContainers:
+  - name: zerok-init
+    image: soarinferret/iptablesproxy
+    imagePullPolicy: IfNotPresent
+    command: [ 'sh', '-c', 'iptables -t nat -I PREROUTING 1 -p tcp -i eth0 --dport 80 -j REDIRECT --to-port 15003; echo updated iptables; iptables -t nat --list && sleep 5']
+    securityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+      privileged: true
+  containers:
+  - name: proxy
+    image: envoyproxy/envoy-alpine:v1.21-latest
+    imagePullPolicy: IfNotPresent
+    command: ["envoy"]
+    args: ["-c", "/etc/envoy-config.yaml", "-l", "info"]
+    ports:
+    - containerPort: 15003
+      name: http
+      protocol: TCP
+    resources: 
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 10m
+        memory: 40Mi
+    volumeMounts:
+      - name: envoy-config
+        mountPath: /etc/envoy-config.yaml
+        subPath: envoy-config.yaml
+  - name: service-target
+    image: nginx
+    imagePullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 10m
+        memory: 40Mi
+    volumeMounts:
+      - mountPath: /etc/nginx/conf.d
+        name: target   
+  terminationGracePeriodSeconds: 30
+  volumes:
+    - configMap:
+        defaultMode: 256
+        name: ingress-envoy-config
+        optional: false
+      name: envoy-config
+    - configMap:
+        defaultMode: 256
+        name: target
+        optional: false
+      name: target
+
+---
+
+apiVersion: v1
+data:
+  default.conf: |
+    server {
+        listen       80;
+        server_name  localhost;
+        access_log  /var/log/nginx/access.log  main;
+        location / {
+            add_header Content-Type text/plain;
+            return 200 'target';
+        }
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   /usr/share/nginx/html;
+        }
+    }
+kind: ConfigMap
+metadata:
+  name: target
+  namespace: default
+

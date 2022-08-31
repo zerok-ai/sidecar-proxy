@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: load
+  namespace: default
+  labels:
+    app: load
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: IfNotPresent
+    name: loadrunner
+    command: ['sh','-c','i=0 ; while true ; do curl -s http://nginx.default.svc.cluster.local/get?query=param ; if [ $? -ne 0 ] ; then echo $i ; break ; fi ; i=$(($i+1)) ; echo " < $i \r" ; sleep 1 ; done']
+    resources: 
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 10m
+        memory: 40Mi
