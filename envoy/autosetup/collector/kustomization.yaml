@@ -1,0 +1,15 @@
+bases:
+  - ../base
+namespace: zerok
+patchesJson6902:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: nginx-deployment
+    path: deployment-patch.yaml
+  - target:
+      version: v1
+      kind: ConfigMap
+      name: target
+    path: configmap-patch.yaml

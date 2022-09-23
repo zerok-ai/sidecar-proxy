@@ -1,3 +1,5 @@
+DEFAULT_CLOUD_PROVIDER="gke"
+
 helpFunction()
 {
    echo ""
@@ -6,11 +8,7 @@ helpFunction()
    exit 1 # Exit script after printing help
 }
 
-clusterProvider=$1
-if [ -z "$clusterProvider" ]
-then
-   clusterProvider=gke;
-fi
+clusterProvider="${1:-$DEFAULT_CLOUD_PROVIDER}"
 
 # install cluster
 sh ./$clusterProvider/install.sh

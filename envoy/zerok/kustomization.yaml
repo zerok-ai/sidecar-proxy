@@ -1,0 +1,6 @@
+resources: 
+- namespace.yaml
+- collector-envoy-config.yaml
+- ingress-envoy-config.yaml
+- zk_listener_service
+- zk_collector_service

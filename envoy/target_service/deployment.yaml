@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: target
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: target
+  template:
+    metadata:
+      labels:
+        app: target
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+        resources: 
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+        volumeMounts:
+          - mountPath: /etc/nginx/conf.d
+            name: target   
+      volumes:
+        - configMap:
+            defaultMode: 256
+            name: target
+            optional: false
+          name: target

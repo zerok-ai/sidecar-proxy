@@ -1,0 +1,125 @@
+- op: remove
+  path: /status
+  value: 1
+- op: replace
+  path: /metadata/name
+  value: zerok-collector-deployment
+- op: replace
+  path: /metadata/namespace
+  value: zerok
+- op: replace
+  path: /spec/replicas
+  value: 1
+- op: add
+  path: /spec/template/metadata/labels/owner
+  value: zerok
+- op: add
+  path: /spec/template/metadata/labels/type
+  value: collector
+- op: add
+  path: /spec/template/spec/volumes/-
+  value: 
+    name: envoy-log-taps
+    hostPath:
+      path: /var/log/
+- op: add
+  path: /spec/template/spec/volumes/-
+  value: 
+    configMap:
+      defaultMode: 256
+      name: ingress-envoy-config
+      optional: false
+    name: ingress-envoy-config
+- op: add
+  path: /spec/template/spec/volumes/-
+  value: 
+    configMap:
+      defaultMode: 256
+      name: egress-envoy-config
+      optional: false
+    name: egress-envoy-config
+- op: add
+  path: /spec/template/spec/initContainers
+  value: []
+# - op: add
+#   path: /spec/template/spec/initContainers/-
+#   value: 
+#     name: zerok-init
+#     image: soarinferret/iptablesproxy
+#     imagePullPolicy: IfNotPresent
+#     command: 
+#       - 'sh'
+#       - '-c'
+#       - >
+#           iptables -t nat -I OUTPUT 1 -p tcp ! -d 127.0.0.1/32 -j REDIRECT --to-port 15001; 
+#           iptables -t nat -I OUTPUT 1 -p tcp -o lo -j ACCEPT; 
+#           iptables -t nat -I PREROUTING 1 -p tcp -j REDIRECT --to-port 15003; 
+#           echo updated iptables; 
+#           iptables -t nat --list
+#     securityContext:
+#       capabilities:
+#         add:
+#         - NET_ADMIN
+#       privileged: true
+- op: add
+  path: /spec/template/spec/initContainers/-
+  value: 
+    name: zerok-init
+    image: docker.io/istio/proxyv2:1.14.1
+    imagePullPolicy: IfNotPresent
+    securityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+      privileged: true
+- op: add
+  path: /spec/template/spec/containers/-
+  value: 
+    name: ingress-proxy
+    image: envoyproxy/envoy-alpine:v1.21-latest
+    imagePullPolicy: IfNotPresent
+    command: ["envoy"]
+    args: ["-c", "/etc/envoy-config.yaml", "-l", "info", "--base-id","1"]
+    ports:
+    - containerPort: 15003
+      name: http
+      protocol: TCP
+    resources: 
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 10m
+        memory: 40Mi
+    volumeMounts:
+      - name: ingress-envoy-config
+        mountPath: /etc/envoy-config.yaml
+        subPath: envoy-config.yaml
+      - name: envoy-log-taps
+        mountPath: /var/log/ingress
+- op: add
+  path: /spec/template/spec/containers/-
+  value: 
+    name: egress-proxy
+    image: envoyproxy/envoy-alpine:v1.21-latest
+    imagePullPolicy: IfNotPresent
+    command: ["envoy"]
+    args: ["-c", "/etc/envoy-config.yaml", "-l", "info"]
+    ports:
+    - containerPort: 15001
+      name: http
+      protocol: TCP
+    resources: 
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 10m
+        memory: 40Mi
+    volumeMounts:
+      - name: egress-envoy-config
+        mountPath: /etc/envoy-config.yaml
+        subPath: envoy-config.yaml
+      - name: envoy-log-taps
+        mountPath: /var/log/egress
+

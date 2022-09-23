@@ -1,0 +1,61 @@
+- op: remove
+  path: /status
+  value: 1
+- op: replace
+  path: /spec/replicas
+  value: 1
+- op: replace
+  path: /metadata/name
+  value: zerok-deployment
+- op: add
+  path: /spec/template/metadata/labels/owner
+  value: zerok
+- op: add
+  path: /spec/template/metadata/labels/type
+  value: listener
+- op: add
+  path: /spec/template/spec/volumes/-
+  value: 
+    configMap:
+      defaultMode: 256
+      name: listener-envoy-config
+      optional: false
+    name: envoy-config
+- op: add
+  path: /spec/template/spec/initContainers
+  value: []
+- op: add
+  path: /spec/template/spec/initContainers/-
+  value: 
+    name: zerok-init
+    image: soarinferret/iptablesproxy
+    imagePullPolicy: IfNotPresent
+    command: [ 'sh', '-c', 'iptables -t nat -I PREROUTING 1 -p tcp -j REDIRECT --to-port 15003; echo updated iptables; iptables -t nat --list']
+    securityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+      privileged: true
+- op: add
+  path: /spec/template/spec/containers/-
+  value: 
+    name: ingress-proxy
+    image: envoyproxy/envoy-alpine:v1.21-latest
+    imagePullPolicy: IfNotPresent
+    command: ["envoy"]
+    args: ["-c", "/etc/envoy-config.yaml", "-l", "info"]
+    ports:
+    - containerPort: 15003
+      name: http
+      protocol: TCP
+    resources: 
+      limits:
+        cpu: "2"
+        memory: 1Gi
+      requests:
+        cpu: 10m
+        memory: 40Mi
+    volumeMounts:
+      - name: envoy-config
+        mountPath: /etc/envoy-config.yaml
+        subPath: envoy-config.yaml

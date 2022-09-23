@@ -1,0 +1,6 @@
+resources: 
+- namespace.yaml
+- service.yaml
+- listener-envoy-config.yaml
+- egress-envoy-config.yaml
+- ingress-envoy-config.yaml

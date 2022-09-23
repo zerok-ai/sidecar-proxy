@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"target"},"name":"nginx-deployment","namespace":"default"},"spec":{"replicas":2,"selector":{"matchLabels":{"app":"target"}},"template":{"metadata":{"labels":{"app":"target"}},"spec":{"containers":[{"image":"nginx:1.14.2","name":"nginx","ports":[{"containerPort":80}],"resources":{"limits":{"cpu":"2","memory":"1Gi"},"requests":{"cpu":"10m","memory":"40Mi"}},"volumeMounts":[{"mountPath":"/etc/nginx/conf.d","name":"target"}]}],"volumes":[{"configMap":{"defaultMode":256,"name":"target","optional":false},"name":"target"}]}}}}
+  creationTimestamp: "2022-09-23T05:00:28Z"
+  generation: 1
+  labels:
+    app: target
+  name: nginx-deployment
+  namespace: default
+  resourceVersion: "167064"
+  uid: 601465c8-8a58-4dce-b6e2-bae7bb3137d4
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: target
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: target
+    spec:
+      containers:
+      - image: nginx:1.14.2
+        imagePullPolicy: IfNotPresent
+        name: nginx
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d
+          name: target
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          defaultMode: 256
+          name: target
+          optional: false
+        name: target
+status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: "2022-09-23T05:00:31Z"
+    lastUpdateTime: "2022-09-23T05:00:31Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2022-09-23T05:00:28Z"
+    lastUpdateTime: "2022-09-23T05:00:31Z"
+    message: ReplicaSet "nginx-deployment-7bd44f445" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 2
+  replicas: 2
+  updatedReplicas: 2

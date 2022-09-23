@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zerok-deployment
+  labels:
+    app: target
+    owner: zerok
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: target
+      owner: zerok
+  template:
+    metadata:
+      labels:
+        app: target
+        owner: zerok
+    spec:
+      initContainers:
+      - name: zerok-init
+        image: soarinferret/iptablesproxy
+        imagePullPolicy: IfNotPresent
+        command: [ 'sh', '-c', 'iptables -t nat -I PREROUTING 1 -p tcp -j REDIRECT --to-port 15003; echo updated iptables; iptables -t nat --list && sleep 5']
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+          privileged: true
+      containers:
+      - name: proxy
+        image: envoyproxy/envoy-alpine:v1.21-latest
+        imagePullPolicy: IfNotPresent
+        command: ["envoy"]
+        args: ["-c", "/etc/envoy-config.yaml", "-l", "info"]
+        ports:
+        - containerPort: 15003
+          name: http
+          protocol: TCP
+        resources: 
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+        volumeMounts:
+          - name: envoy-config
+            mountPath: /etc/envoy-config.yaml
+            subPath: envoy-config.yaml
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+        resources: 
+          limits:
+            cpu: "2"
+            memory: 1Gi
+          requests:
+            cpu: 10m
+            memory: 40Mi
+        volumeMounts:
+          - mountPath: /etc/nginx/conf.d
+            name: target   
+      volumes:
+        - configMap:
+            defaultMode: 256
+            name: ingress-envoy-config
+            optional: false
+          name: envoy-config
+        - configMap:
+            defaultMode: 256
+            name: target-listener
+            optional: false
+          name: target
+

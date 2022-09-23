@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: target
+data:
+  default.conf: |
+    server {
+      listen       80;
+      server_name  localhost;
+      access_log  /var/log/nginx/access.log  main;
+      location / {
+        default_type text/html;
+        # return 200 "completed";
+
+        proxy_http_version 1.1;
+        proxy_ssl_server_name on;
+        proxy_read_timeout 5m; 
+        proxy_pass https://jsonplaceholder.typicode.com/todos/1;
+        # proxy_pass https://dummyjson.com/products/1;
+      }
+      error_page   500 502 503 504  /50x.html;
+      location = /50x.html {
+        root   /usr/share/nginx/html;
+      }
+    }

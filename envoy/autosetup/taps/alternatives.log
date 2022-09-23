@@ -1,0 +1,10 @@
+update-alternatives 2022-09-19 10:10:39: run with --set iptables /usr/sbin/iptables-legacy
+update-alternatives 2022-09-19 10:10:39: run with --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives 2022-09-20 04:05:16: run with --set iptables /usr/sbin/iptables-legacy
+update-alternatives 2022-09-20 04:05:16: run with --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives 2022-09-23 04:38:58: run with --set iptables /usr/sbin/iptables-legacy
+update-alternatives 2022-09-23 04:38:58: run with --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives 2022-09-23 07:35:57: run with --set iptables /usr/sbin/iptables-legacy
+update-alternatives 2022-09-23 07:35:57: run with --set ip6tables /usr/sbin/ip6tables-legacy
+update-alternatives 2022-09-23 07:36:46: run with --set iptables /usr/sbin/iptables-legacy
+update-alternatives 2022-09-23 07:36:46: run with --set ip6tables /usr/sbin/ip6tables-legacy

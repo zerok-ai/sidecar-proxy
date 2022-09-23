@@ -1,0 +1,4 @@
+resources: 
+- deployment.yaml
+- listener-nginx-conf.yaml
+- service.yaml
